@@ -47,7 +47,7 @@ class Plugin(AbstractPlugin):
             private_keys=self.user.private_key
         )
         print('bdb::write::{}'.format(signed_tx['id']))
-        return self.driver.instance.transactions.send_commit(signed_tx)
+        return self.driver.instance.transactions.send(signed_tx)
 
     def read(self, tx_id):
         value = [
@@ -123,7 +123,7 @@ class Plugin(AbstractPlugin):
             private_keys=self.user.private_key,
         )
 
-        return self.driver.instance.transactions.send_commit(signed_tx)
+        return self.driver.instance.transactions.send(signed_tx)
 
     def delete(self, unspent):
         output_index = 0
@@ -154,4 +154,4 @@ class Plugin(AbstractPlugin):
             private_keys=self.user.private_key,
         )
 
-        return self.driver.instance.transactions.send_commit(signed_tx)
+        return self.driver.instance.transactions.send(signed_tx)
