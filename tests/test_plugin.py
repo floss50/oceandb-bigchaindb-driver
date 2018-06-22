@@ -28,8 +28,8 @@ def test_update():
 def test_plugin_list():
     tx1 = bdb.write({"value": "test1"})
     tx11 = bdb.update({"value": "testUpdated"}, tx1)
-    tx2 =bdb.write({"value": "test2"})
-    tx3 =bdb.write({"value": "test3"})
+    tx2 = bdb.write({"value": "test2"})
+    tx3 = bdb.write({"value": "test3"})
     assert len(bdb.list()) == 3
     assert bdb.list()[0]['value'] == 'testUpdated'
     bdb.delete(tx11)
@@ -38,9 +38,7 @@ def test_plugin_list():
     assert len(bdb.list()) == 0
 
 
-
 def test_plugin_query():
     tx_id = bdb.write({'example': 'BDB'})
     assert bdb.query('BDB')[0]['data']['example'] == "BDB"
     bdb.delete(tx_id)
-

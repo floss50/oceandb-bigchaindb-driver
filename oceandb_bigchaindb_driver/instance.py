@@ -24,9 +24,6 @@ class BigchainDBInstance(object):
 
         self._bdb = BigchainDB(bdb_root_url, headers=tokens)
 
-
-
     @property
     def instance(self):
         return self._bdb
-

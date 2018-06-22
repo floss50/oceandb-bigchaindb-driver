@@ -72,7 +72,6 @@ class Plugin(AbstractPlugin):
                 print('bdb::put::{}'.format(sent_tx['id']))
                 return sent_tx
 
-
         except BadRequest as e:
             print(e)
 
