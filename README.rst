@@ -1,6 +1,21 @@
-[![banner](doc/img/repo-banner@2x.png)](https://oceanprotocol.com)
+|banner|
 
-<h1 align="center">oceandb-bigchaindb-driver</h1>
+.. raw:: html
+
+   <h1 align="center">
+
+oceandb-bigchaindb-driver
+
+.. raw:: html
+
+   </h1>
+
+..
+
+    🐳 Ocean DB BigchainDB driver (Python).
+
+.. |banner| image:: doc/img/repo-banner@2x.png
+   :target: https://oceanprotocol.com
 
 .. image:: https://img.shields.io/pypi/v/oceandb-bigchaindb-driver.svg
         :target: https://pypi.python.org/pypi/oceandb-bigchaindb-driver
