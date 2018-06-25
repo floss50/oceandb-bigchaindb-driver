@@ -1,7 +1,6 @@
 """Implementation of OceanDB plugin based in BigchainDB"""
 from oceandb_driver_interface.plugin import AbstractPlugin
-from oceandb_bigchaindb_driver.instance import get_database_instance
-from bigchaindb_driver.crypto import generate_keypair
+from oceandb_bigchaindb_driver.instance import get_database_instance, generate_key_pair
 from bigchaindb_driver.exceptions import BadRequest
 
 
@@ -20,7 +19,7 @@ class Plugin(AbstractPlugin):
                 connect to as the persistence layer
         """
         self.driver = get_database_instance(config)
-        self.user = generate_keypair()
+        self.user = generate_key_pair(config['secret'])
         self.namespace = config['db.namespace']
 
     @property
@@ -47,6 +46,7 @@ class Plugin(AbstractPlugin):
             private_keys=self.user.private_key
         )
         print('bdb::write::{}'.format(signed_tx['id']))
+        # TODO Change to send_commit when we update to the new version
         return self.driver.instance.transactions.send(signed_tx)
 
     def read(self, tx_id):
@@ -87,7 +87,7 @@ class Plugin(AbstractPlugin):
         return list[0:limit]
 
     def query(self, query_string):
-        query_string = "\"{}\"".format(query_string)
+        query_string = ' "{}" '.format(query_string)
         print('bdb::get::{}'.format(query_string))
         assets = self.driver.instance.assets.get(search=query_string)
         print('bdb::result::len {}'.format(len(assets)))
@@ -121,7 +121,7 @@ class Plugin(AbstractPlugin):
             prepared_transfer_tx,
             private_keys=self.user.private_key,
         )
-
+        # TODO Change to send_commit when we update to the new version
         return self.driver.instance.transactions.send(signed_tx)
 
     def delete(self, unspent):
@@ -152,5 +152,5 @@ class Plugin(AbstractPlugin):
             prepared_transfer_tx,
             private_keys=self.user.private_key,
         )
-
+        # TODO Change to send_commit when we update to the new version
         return self.driver.instance.transactions.send(signed_tx)

@@ -3,6 +3,7 @@ bumpversion==0.5.3
 wheel==0.30.0
 watchdog==0.8.3
 flake8==3.5.0
+#Using this version until 0.5.0 is stable
 bigchaindb_driver==0.5.0a2
 BigchainDB==2.0.0a2
 tox==2.9.1
