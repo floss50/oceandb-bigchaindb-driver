@@ -20,8 +20,8 @@ oceandb-bigchaindb-driver
 .. image:: https://img.shields.io/pypi/v/oceandb-bigchaindb-driver.svg
         :target: https://pypi.python.org/pypi/oceandb-bigchaindb-driver
 
-.. image:: https://img.shields.io/travis/oceanprotocol/oceandb-bigchaindb-driver.svg
-        :target: https://travis-ci.com/oceanprotocol/oceandb-bigchaindb-driver.svg?token=pA8zcB6SCxKW5MHpqs6L&branch=master
+.. image:: https://travis-ci.com/oceanprotocol/oceandb-bigchaindb-driver.svg?token=pA8zcB6SCxKW5MHpqs6L&branch=master
+        :target: https://travis-ci.com/oceanprotocol/oceandb-bigchaindb-driver
 
 .. image:: https://readthedocs.org/projects/oceandb-plugin-system/badge/?version=latest
         :target: https://oceandb-plugin-system.readthedocs.io/en/latest/?badge=latest
