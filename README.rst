@@ -93,4 +93,4 @@ CRAB is the CRUD model in databases applied to blockchains:
 | **D**\ elete | **B**\ urn     |
 +--------------+----------------+
 
-You can find here a link talking about the CRAB model: https://blog.bigchaindb.com/crab-create-retrieve-append-burn-b9f6d111f460
+You can find `here <https://blog.bigchaindb.com/crab-create-retrieve-append-burn-b9f6d111f460>`_ a link talking about the CRAB model.
