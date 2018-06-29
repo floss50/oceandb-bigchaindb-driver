@@ -20,18 +20,12 @@ oceandb-bigchaindb-driver
 .. image:: https://img.shields.io/pypi/v/oceandb-bigchaindb-driver.svg
         :target: https://pypi.python.org/pypi/oceandb-bigchaindb-driver
 
-.. image:: https://img.shields.io/travis/oceanprotocol/oceandb-bigchaindb-driver.svg
+.. image:: https://travis-ci.com/oceanprotocol/oceandb-bigchaindb-driver.svg?token=pA8zcB6SCxKW5MHpqs6L&branch=master
         :target: https://travis-ci.com/oceanprotocol/oceandb-bigchaindb-driver
 
 .. image:: https://readthedocs.org/projects/oceandb-plugin-system/badge/?version=latest
         :target: https://oceandb-plugin-system.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
-
-
-.. image:: https://pyup.io/repos/github/oceanprotocol/oceandb-bigchaindb-driver/shield.svg
-     :target: https://pyup.io/repos/github/oceanprotocol/oceandb-bigchaindb-driver/
-     :alt: Updates
-
 
 
 BigchainDB driver to connect implementing OceanDB.
@@ -59,22 +53,24 @@ In the configuration we are going to specify the following parameters to
 
     [oceandb]
 
-    enabled=true
-    #location of plugin class
-    module=bdb
-    module.path=./oceandb_bigchaindb_driver/plugin.py
-    db.hostname=localhost
-    db.port=9984
-    db.namespace=name
-    db.app_id=
-    db.app_key=
+    enabled=true            # In order to enable or not the plugin
+    module=bigchaindb       # You can use one the plugins already created. Currently we have mongodb and bigchaindb.
+    module.path=            # You can specify the location of your custom plugin.
+    db.hostname=localhost   # Address of your bigchaindb nodes.
+    db.port=9985            # Port of your bigchaindb database.
+
+    # Bigchaindb specific config:
+    secret=                 # A secret that serves as a seed.
+    db.namespace=namespace  # Namespace that you are going to use in bigchaindb
+    db.app_id=              # App id of your bigchaindb application.
+    db.app_key=             # App key of your bigchaindb application.
 ..
 
 Once you have defined this the only thing that you have to do it is use it:
 
 .. code-block:: python
 
-    oceandb = OceanDb(conf)
+    oceandb = OceanDb(confPath)
     oceandb.write({"value": "test"})
 
 ..

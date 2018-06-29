@@ -1,5 +1,3 @@
-# Config file for automatic testing at travis-ci.org
-
 language: python
 python:
   - 3.6
@@ -7,7 +5,6 @@ python:
   - 3.4
 
 sudo: required
-
 services:
   - docker
 
@@ -16,20 +13,13 @@ before_install:
 
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -U tox-travis
-
-# Command to run tests, e.g. python setup.py test
 script: tox
-
-# Assuming you have installed the travis-ci CLI tool, after you
-# create the Github repo and add it to Travis, run the
-# following command to finish PyPI deployment setup:
-# $ travis encrypt --add deploy.password
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
   user: leucothia
   password:
-    secure: "j4Pc7cjSTCQh0Lp1lPedo+/VmhzsCWguU4YL0c5aSdw4Hiwy1RGAL54xqj7z5IfSrEitj2VbQXHbgnhmcl2/CBqajaw8ZP4nFWPDugPVzE4HbXCM0ISVGsY3sWEW6TPP22Q22+AyBcXYGbYGzoIZLJDpfpLKRMEv3okLR8j5hDna53jwcoBPuEMeKqrfvBoSY+15quqEl8u2Khq01OH/N1tcdxZPnEGXbLsf7U08kqdh9fgtmyMUoHzNCmL5WSPpVtPOVoEUCVG348rUo/bDGoD/TL1rFWykNB/WSMW7jkcBud58pY4IfC0ntlrsMSTu/CTlsf90pfohZIBJ34kCu2duH4CJjaSX7FlBD1BdMCtLDM/ilyIoVqHwVh60zwGEQhPjfLy7ldpEPEr92wuleejoqFEss/bj2wI8HCl8i9b4ifoYlI17Fmxq4la+0CNgITPP7KvajBU0TKKJJ05AedFLpQkvN3wT8aAm5rREnR/c6PhTWNMCztv7jhrjZoVnceukqhTC744VsfNktU+VE6jUwI2AxotpbZ7snt/qtLiu2aTS9b2azzEuJ/k0LuoRu7f9TZTc2sQMCNnkw4lzxQW+k17MMYZld1n/m9TlvfbFlnXuRjbjWuet+XDxnPwu3NoaRQvgg4NOuBTo60sWRic7IV2ZjvqfQLxGEngNYz0="
+    secure: f73DnxAceQn1zLnwpEZn+igIjm+i9AlaKGtF6VM837e8XDQP6o0105Ird7/dYS3vm1BiCa2FSS+8LjyF3tQQuyROL+1EGdqKMJhUGHUXhq3gcXPGCA5QdWr5NI79hkGskmTx5WxzP0R4jKbtCeCNp+pJzlZ3gaaQVDurirNbpS5sIwvCbQ74T4rzkwi3QmET7RHRNckQ/whV49+8ItUBTkxRgCVcfIjp8MnyB712iNK1IB+zhE1E8FsECi1Zjy/XSkuNjsfRuoN3LdbqjmZ/B1DIPCEgFr2FZnL2O8dxw1fWQ+Hi9fGS56KCSFaQM+5U0m/T8Py/qwCT0nHg3DgDnxV7ruUJV5/bSViztYpXo/EH26jdSYKuT462/OUhvuMfEs9Fanao/x6qIrnXBAkuz2z/JWdm8jbE2yvnqoVMw1QCfZ7/HkXwgqvcv79fNl42r9wEN1gd+3SO1M4ZSjS1t4XqG+6lPHCaelBrv3IeIZZ3YhePISuort6JsUNyYL8d8pW8y3usVx74fuFOrc8NuCPQE7K8WP9whPadXKZhncJy1g5oH+VKo/yl3vzHj/sbOax91Uuqtgow4EtTZYXgiR5FB04HlUrpunRaL2q1Vr1LyPuRKHvHqjWtD7gBRoaKtnNNFsL+z38BwOxOc8dRKuBAinBwe5+wBICpII/ePdY=
   on:
     tags: true
     repo: oceanprotocol/oceandb_bigchaindb_driver
