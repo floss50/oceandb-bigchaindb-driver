@@ -64,13 +64,15 @@ class Plugin(AbstractPlugin):
         value = [
             {
                 'data': transaction['metadata'],
-                'id': transaction['id'],
-                'tx': transaction
+                'id': transaction['id']
             }
             for transaction in self.driver.instance.transactions.get(asset_id=tx_id)
-        ][-1]['data']['data']
-        print('bdb::read::{}'.format(value))
-        return value
+        ][-1]
+        if value['data']['data']:
+            print('bdb::read::{}'.format(value['data']))
+            return value
+        else:
+            return False
 
     def update(self, metadata, tx_id=None):
         """Update and obj in bdb using the tx_id.

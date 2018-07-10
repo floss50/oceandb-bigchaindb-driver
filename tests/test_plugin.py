@@ -12,16 +12,16 @@ def test_plugin_type_is_bdb():
 
 def test_plugin_write_and_read():
     tx_id = bdb.write({"value": "plugin"})
-    assert bdb.read(tx_id)['value'] == 'plugin'
+    assert bdb.read(tx_id)['data']['data']['value'] == 'plugin'
     bdb.delete(tx_id)
 
 
 def test_update():
     tx_id = bdb.write({"value": "test"})
-    assert bdb.read(tx_id)['value'] == 'test'
+    assert bdb.read(tx_id)['data']['data']['value'] == 'test'
     bdb.update({"value": "testUpdated"}, tx_id)
     bdb.update({"value": "testUpdated2"}, tx_id)
-    assert bdb.read(tx_id)['value'] == 'testUpdated2'
+    assert bdb.read(tx_id)['data']['data']['value'] == 'testUpdated2'
     bdb.delete(tx_id)
 
 
@@ -31,7 +31,7 @@ def test_plugin_list():
     tx2 = bdb.write({"value": "test2"})
     tx3 = bdb.write({"value": "test3"})
     assert len(bdb.list()) == 3
-    assert bdb.list()[0]['value'] == 'testUpdated'
+    assert bdb.list()[0]['data']['data']['value'] == 'testUpdated'
     bdb.delete(tx1)
     bdb.delete(tx2)
     bdb.delete(tx3)
