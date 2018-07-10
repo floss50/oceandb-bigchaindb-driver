@@ -11,7 +11,7 @@ with open('README.rst', encoding='utf-8') as readme_file:
 with open('HISTORY.rst', encoding='utf-8') as history_file:
     history = history_file.read()
 
-requirements = ['oceandb-driver-interface', ]
+requirements = ['oceandb-driver-interface', 'bigchaindb_driver', 'BigchainDB', ]
 
 setup_requirements = ['pytest-runner', ]
 
