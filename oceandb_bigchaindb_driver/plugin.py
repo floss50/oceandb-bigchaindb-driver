@@ -47,7 +47,8 @@ class Plugin(AbstractPlugin):
         )
         print('bdb::write::{}'.format(signed_tx['id']))
         # TODO Change to send_commit when we update to the new version
-        return self.driver.instance.transactions.send(signed_tx)
+        self.driver.instance.transactions.send(signed_tx)
+        return signed_tx['id']
 
     def read(self, tx_id):
         value = [
@@ -61,15 +62,17 @@ class Plugin(AbstractPlugin):
         print('bdb::read::{}'.format(value))
         return value
 
-    def update(self, metadata, unspent=None):
+    def update(self, metadata, tx_id=None):
         try:
-            if not unspent:
+            if not tx_id:
                 sent_tx = self.write(metadata)
                 print('bdb::put::{}'.format(sent_tx['id']))
                 return sent_tx
             else:
+                txs = self.driver.instance.transactions.get(asset_id=tx_id)
+                unspent = txs[-1]
                 sent_tx = self.put(metadata, unspent)
-                print('bdb::put::{}'.format(sent_tx['id']))
+                print('bdb::put::{}'.format(sent_tx))
                 return sent_tx
 
         except BadRequest as e:
@@ -122,9 +125,12 @@ class Plugin(AbstractPlugin):
             private_keys=self.user.private_key,
         )
         # TODO Change to send_commit when we update to the new version
-        return self.driver.instance.transactions.send(signed_tx)
+        self.driver.instance.transactions.send(signed_tx)
+        return signed_tx['id']
 
-    def delete(self, unspent):
+    def delete(self, tx_id):
+        txs = self.driver.instance.transactions.get(asset_id=tx_id)
+        unspent = txs[-1]
         output_index = 0
         output = unspent['outputs'][output_index]
 
