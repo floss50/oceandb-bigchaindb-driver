@@ -28,6 +28,11 @@ class Plugin(AbstractPlugin):
         return 'BigchainDB'
 
     def write(self, obj):
+        """Write and obj in bdb.
+
+        :param obj: value to be written in bdb.
+        :return: id of the transaction
+        """
         prepared_creation_tx = self.driver.instance.transactions.prepare(
             operation='CREATE',
             signers=self.user.public_key,
@@ -47,9 +52,15 @@ class Plugin(AbstractPlugin):
         )
         print('bdb::write::{}'.format(signed_tx['id']))
         # TODO Change to send_commit when we update to the new version
-        return self.driver.instance.transactions.send(signed_tx)
+        self.driver.instance.transactions.send(signed_tx)
+        return signed_tx['id']
 
     def read(self, tx_id):
+        """Read and obj in bdb using the tx_id.
+
+        :param tx_id: id of the transaction to be read.
+        :return: value with the data, transaction id and transaction.
+        """
         value = [
             {
                 'data': transaction['metadata'],
@@ -61,21 +72,37 @@ class Plugin(AbstractPlugin):
         print('bdb::read::{}'.format(value))
         return value
 
-    def update(self, metadata, unspent=None):
+    def update(self, metadata, tx_id=None):
+        """Update and obj in bdb using the tx_id.
+
+        :param metadata: new metadata for the transaction.
+        :param tx_id: id of the transaction to be updated.
+        :return: id of the transaction.
+        """
         try:
-            if not unspent:
+            if not tx_id:
                 sent_tx = self.write(metadata)
                 print('bdb::put::{}'.format(sent_tx['id']))
                 return sent_tx
             else:
-                sent_tx = self.put(metadata, unspent)
-                print('bdb::put::{}'.format(sent_tx['id']))
+                txs = self.driver.instance.transactions.get(asset_id=tx_id)
+                unspent = txs[-1]
+                sent_tx = self._put(metadata, unspent)
+                print('bdb::put::{}'.format(sent_tx))
                 return sent_tx
 
         except BadRequest as e:
             print(e)
 
     def list(self, search_from=None, search_to=None, offset=None, limit=None):
+        """List all the objects saved in the namespace.
+
+        :param search_from: TBI
+        :param search_to: TBI
+        :param offset: TBI
+        :param limit: max number of values to be shows.
+        :return: list with transactions.
+        """
         all = self.driver.instance.metadata.get(search=self.namespace)
         list = []
         for id in all:
@@ -87,44 +114,25 @@ class Plugin(AbstractPlugin):
         return list[0:limit]
 
     def query(self, query_string):
+        """Query to bdb namespace.
+
+        :param query_string: query in string format.
+        :return: list of transactions that match with the query.
+        """
         query_string = ' "{}" '.format(query_string)
         print('bdb::get::{}'.format(query_string))
         assets = self.driver.instance.assets.get(search=query_string)
         print('bdb::result::len {}'.format(len(assets)))
         return assets
 
-    def put(self, metadata, unspent):
-        output_index = 0
-        output = unspent['outputs'][output_index]
+    def delete(self, tx_id):
+        """Delete a transaction. Read documentation about CRAB model in https://blog.bigchaindb.com/crab-create-retrieve-append-burn-b9f6d111f460.
 
-        transfer_input = {
-            'fulfillment': output['condition']['details'],
-            'fulfills': {
-                'output_index': output_index,
-                'transaction_id': unspent['id']
-            },
-            'owners_before': output['public_keys']
-        }
-
-        prepared_transfer_tx = self.driver.instance.transactions.prepare(
-            operation='TRANSFER',
-            asset=unspent['asset'] if 'id' in unspent['asset'] else {'id': unspent['id']},
-            inputs=transfer_input,
-            recipients=self.user.public_key,
-            metadata={
-                'namespace': self.namespace,
-                'data': metadata
-            }
-        )
-
-        signed_tx = self.driver.instance.transactions.fulfill(
-            prepared_transfer_tx,
-            private_keys=self.user.private_key,
-        )
-        # TODO Change to send_commit when we update to the new version
-        return self.driver.instance.transactions.send(signed_tx)
-
-    def delete(self, unspent):
+        :param tx_id: transaction id
+        :return:
+        """
+        txs = self.driver.instance.transactions.get(asset_id=tx_id)
+        unspent = txs[-1]
         output_index = 0
         output = unspent['outputs'][output_index]
 
@@ -153,4 +161,36 @@ class Plugin(AbstractPlugin):
             private_keys=self.user.private_key,
         )
         # TODO Change to send_commit when we update to the new version
-        return self.driver.instance.transactions.send(signed_tx)
+        self.driver.instance.transactions.send(signed_tx)
+
+    def _put(self, metadata, unspent):
+        output_index = 0
+        output = unspent['outputs'][output_index]
+
+        transfer_input = {
+            'fulfillment': output['condition']['details'],
+            'fulfills': {
+                'output_index': output_index,
+                'transaction_id': unspent['id']
+            },
+            'owners_before': output['public_keys']
+        }
+
+        prepared_transfer_tx = self.driver.instance.transactions.prepare(
+            operation='TRANSFER',
+            asset=unspent['asset'] if 'id' in unspent['asset'] else {'id': unspent['id']},
+            inputs=transfer_input,
+            recipients=self.user.public_key,
+            metadata={
+                'namespace': self.namespace,
+                'data': metadata
+            }
+        )
+
+        signed_tx = self.driver.instance.transactions.fulfill(
+            prepared_transfer_tx,
+            private_keys=self.user.private_key,
+        )
+        # TODO Change to send_commit when we update to the new version
+        self.driver.instance.transactions.send(signed_tx)
+        return signed_tx['id']
