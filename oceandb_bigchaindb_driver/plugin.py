@@ -12,7 +12,7 @@ class Plugin(AbstractPlugin):
     """
     BURN_ADDRESS = 'BurnBurnBurnBurnBurnBurnBurnBurnBurnBurnBurn'
 
-    def __init__(self, config):
+    def __init__(self, config, namespace=None):
         """Initialize a :class:`~.Plugin` instance and connect to BigchainDB.
         Args:
             *nodes (str): One or more URLs of BigchainDB nodes to
@@ -20,7 +20,10 @@ class Plugin(AbstractPlugin):
         """
         self.driver = get_database_instance(config)
         self.user = generate_key_pair(config['secret'])
-        self.namespace = config['db.namespace']
+        if namespace:
+            self.namespace = namespace
+        else:
+            self.namespace = config['db.namespace']
 
     @property
     def type(self):
@@ -53,7 +56,7 @@ class Plugin(AbstractPlugin):
         print('bdb::write::{}'.format(signed_tx['id']))
         # TODO Change to send_commit when we update to the new version
         self.driver.instance.transactions.send(signed_tx)
-        return signed_tx['id']
+        return signed_tx
 
     def read(self, tx_id):
         """Read and obj in bdb using the tx_id.
@@ -66,7 +69,7 @@ class Plugin(AbstractPlugin):
                 'data': transaction['metadata'],
                 'id': transaction['id']
             }
-            for transaction in self.driver.instance.transactions.get(asset_id=tx_id)
+            for transaction in self.driver.instance.transactions.get(asset_id=self.take_first_id(tx_id))
         ][-1]
         if value['data']['data']:
             print('bdb::read::{}'.format(value['data']))
@@ -87,7 +90,7 @@ class Plugin(AbstractPlugin):
                 print('bdb::put::{}'.format(sent_tx['id']))
                 return sent_tx
             else:
-                txs = self.driver.instance.transactions.get(asset_id=tx_id)
+                txs = self.driver.instance.transactions.get(asset_id=self.take_first_id(tx_id))
                 unspent = txs[-1]
                 sent_tx = self._put(metadata, unspent)
                 print('bdb::put::{}'.format(sent_tx))
@@ -109,12 +112,14 @@ class Plugin(AbstractPlugin):
         list = []
         for id in all:
             try:
-                list.append(self.read(id['id']))
-            except:
+                if not self.read(id['id']) in list:
+                    list.append(self.read(id['id']))
+            except Exception:
                 pass
 
         return list[0:limit]
 
+    # TODO Query only has to work in the namespace.
     def query(self, query_string):
         """Query to bdb namespace.
 
@@ -133,7 +138,7 @@ class Plugin(AbstractPlugin):
         :param tx_id: transaction id
         :return:
         """
-        txs = self.driver.instance.transactions.get(asset_id=tx_id)
+        txs = self.driver.instance.transactions.get(asset_id=self.take_first_id(tx_id))
         unspent = txs[-1]
         output_index = 0
         output = unspent['outputs'][output_index]
@@ -165,6 +170,19 @@ class Plugin(AbstractPlugin):
         # TODO Change to send_commit when we update to the new version
         self.driver.instance.transactions.send(signed_tx)
 
+    def take_first_id(self, tx_id):
+        """Return the tx_id of the first transaction.
+
+        :param tx_id: Transaction id to start the recursive search.
+        :return Transaction id parent.
+        """
+        tx = self.driver.instance.transactions.retrieve(txid=tx_id)
+        assert tx is not None
+        if tx['operation'] == 'CREATE':
+            return tx['id']
+        else:
+            return self.take_first_id(tx['inputs'][0]['fulfills']['transaction_id'])
+
     def _put(self, metadata, unspent):
         output_index = 0
         output = unspent['outputs'][output_index]
@@ -195,4 +213,4 @@ class Plugin(AbstractPlugin):
         )
         # TODO Change to send_commit when we update to the new version
         self.driver.instance.transactions.send(signed_tx)
-        return signed_tx['id']
+        return signed_tx
