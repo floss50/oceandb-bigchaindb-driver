@@ -69,7 +69,7 @@ class Plugin(AbstractPlugin):
                 'data': transaction['metadata'],
                 'id': transaction['id']
             }
-            for transaction in self.driver.instance.transactions.get(asset_id=self.take_first_id(tx_id))
+            for transaction in self.driver.instance.transactions.get(asset_id=self.get_asset_id(tx_id))
         ][-1]
         if value['data']['data']:
             print('bdb::read::{}'.format(value['data']))
@@ -90,7 +90,7 @@ class Plugin(AbstractPlugin):
                 print('bdb::put::{}'.format(sent_tx['id']))
                 return sent_tx
             else:
-                txs = self.driver.instance.transactions.get(asset_id=self.take_first_id(tx_id))
+                txs = self.driver.instance.transactions.get(asset_id=self.get_asset_id(tx_id))
                 unspent = txs[-1]
                 sent_tx = self._put(metadata, unspent)
                 print('bdb::put::{}'.format(sent_tx))
@@ -138,7 +138,7 @@ class Plugin(AbstractPlugin):
         :param tx_id: transaction id
         :return:
         """
-        txs = self.driver.instance.transactions.get(asset_id=self.take_first_id(tx_id))
+        txs = self.driver.instance.transactions.get(asset_id=self.get_asset_id(tx_id))
         unspent = txs[-1]
         output_index = 0
         output = unspent['outputs'][output_index]
@@ -170,7 +170,7 @@ class Plugin(AbstractPlugin):
         # TODO Change to send_commit when we update to the new version
         self.driver.instance.transactions.send(signed_tx)
 
-    def take_first_id(self, tx_id):
+    def get_asset_id(self, tx_id):
         """Return the tx_id of the first transaction.
 
         :param tx_id: Transaction id to start the recursive search.
@@ -178,10 +178,8 @@ class Plugin(AbstractPlugin):
         """
         tx = self.driver.instance.transactions.retrieve(txid=tx_id)
         assert tx is not None
-        if tx['operation'] == 'CREATE':
-            return tx['id']
-        else:
-            return self.take_first_id(tx['inputs'][0]['fulfills']['transaction_id'])
+        first_id = tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
+        return first_id
 
     def _put(self, metadata, unspent):
         output_index = 0
