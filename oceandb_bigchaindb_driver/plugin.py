@@ -178,8 +178,7 @@ class Plugin(AbstractPlugin):
         """
         tx = self.driver.instance.transactions.retrieve(txid=tx_id)
         assert tx is not None
-        first_id = tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
-        return first_id
+        return tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
 
     def _put(self, metadata, unspent):
         output_index = 0
