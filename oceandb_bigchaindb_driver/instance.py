@@ -19,11 +19,12 @@ def get_database_instance(config_file=None):
 class BigchainDBInstance(object):
 
     def __init__(self, config):
+        scheme = config['db.scheme'] if config['db.scheme'] else 'https'
         host = config['db.hostname']
-        port = int(config['db.port'])
+        port = int(config['db.port']) if config['db.port'] else ''
         app_id = config['db.app_id']
         app_key = config['db.app_key']
-        bdb_root_url = '%s:%s' % (host, port)
+        bdb_root_url = '%s://%s:%s' % (scheme, host, port)
         # bdb_root_url = 'https://%s:%s' % (host, port)
         tokens = {'app_id': app_id, 'app_key': app_key}
 
