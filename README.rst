@@ -71,8 +71,10 @@ Once you have defined this the only thing that you have to do it is use it:
 .. code-block:: python
 
     oceandb = OceanDb(confPath)
-    oceandb.write({"value": "test"})
-
+    tx_id = oceandb.write({"value": "test"})  #Write a new transaction in bdb.
+    oceandb.read(tx_id)                       #Read the content of this transaction
+    oceandb.update({"value": "update"},tx_id) #Update value of the transaction.
+    oceandb.delete(tx_id)                     #Delete transaction
 ..
 
 
