@@ -2,7 +2,7 @@
 from oceandb_driver_interface.plugin import AbstractPlugin
 from oceandb_bigchaindb_driver.instance import get_database_instance, generate_key_pair
 from bigchaindb_driver.exceptions import BadRequest
-
+import logging
 
 class Plugin(AbstractPlugin):
     """BigchainDB ledger plugin for `Ocean DB's Python reference
@@ -11,6 +11,9 @@ class Plugin(AbstractPlugin):
     related actions.
     """
     BURN_ADDRESS = 'BurnBurnBurnBurnBurnBurnBurnBurnBurnBurnBurn'
+
+    logger = logging.getLogger('Plugin')
+    logging.basicConfig(level=logging.INFO)
 
     def __init__(self, config, namespace=None):
         """Initialize a :class:`~.Plugin` instance and connect to BigchainDB.
@@ -56,7 +59,7 @@ class Plugin(AbstractPlugin):
             prepared_creation_tx,
             private_keys=self.user.private_key
         )
-        print('bdb::write::{}'.format(signed_tx['id']))
+        logging.debug('bdb::write::{}'.format(signed_tx['id']))
         self.driver.instance.transactions.send_commit(signed_tx)
         return signed_tx
 
@@ -79,7 +82,7 @@ class Plugin(AbstractPlugin):
             for transaction in self.driver.instance.transactions.get(asset_id=self.get_asset_id(tx_id))
         ][-1]
         if value['data']['data']:
-            print('bdb::read::{}'.format(value['data']))
+            logging.debug('bdb::read::{}'.format(value['data']))
             return value
         else:
             return False
@@ -98,17 +101,17 @@ class Plugin(AbstractPlugin):
         try:
             if not tx_id:
                 sent_tx = self.write(metadata)
-                print('bdb::put::{}'.format(sent_tx['id']))
+                logging.debug('bdb::put::{}'.format(sent_tx['id']))
                 return sent_tx
             else:
                 txs = self.driver.instance.transactions.get(asset_id=self.get_asset_id(tx_id))
                 unspent = txs[-1]
                 sent_tx = self._put(metadata, unspent, resource_id)
-                print('bdb::put::{}'.format(sent_tx))
+                logging.debug('bdb::put::{}'.format(sent_tx))
                 return sent_tx
 
         except BadRequest as e:
-            print(e)
+            logging.error(e)
 
     def list(self, search_from=None, search_to=None, offset=None, limit=None):
         """List all the objects saved in the namespace.
@@ -138,9 +141,9 @@ class Plugin(AbstractPlugin):
         :return: list of transactions that match with the query.
         """
         query_string = ' "{}" '.format(query_string)
-        print('bdb::get::{}'.format(query_string))
+        logging.debug('bdb::get::{}'.format(query_string))
         assets = self.driver.instance.assets.get(search=query_string)
-        print('bdb::result::len {}'.format(len(assets)))
+        logging.debug('bdb::result::len {}'.format(len(assets)))
         return assets
 
     def delete(self, asset_id):
