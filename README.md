@@ -1,4 +1,4 @@
-[![banner](docs/imgs/repo-banner@2x.png)](https://oceanprotocol.com)
+[![banner](doc/img/repo-banner@2x.png)](https://oceanprotocol.com)
 
 <h1 align="center">oceandb-bigchaindb-driver</h1>
 
