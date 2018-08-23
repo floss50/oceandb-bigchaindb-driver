@@ -230,8 +230,7 @@ class Plugin(AbstractPlugin):
         return signed_tx
 
     def _find_tx_id(self, resource_id):
-        all = self.list()
-        for a in all:
+        for a in self.list():
             if a['data']['resource_id'] == resource_id:
                 return a['id']
             else:

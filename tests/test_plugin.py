@@ -11,7 +11,7 @@ def test_plugin_type_is_bdb():
 
 
 def test_plugin_write_and_read():
-    tx = bdb.write({"value": "plugin"}, resource_id=1)
+    bdb.write({"value": "plugin"}, resource_id=1)
     assert bdb.read(resource_id=1)['data']['data']['value'] == 'plugin'
     bdb.delete(1)
 
