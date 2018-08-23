@@ -2,7 +2,7 @@
 from oceandb_driver_interface.plugin import AbstractPlugin
 from oceandb_bigchaindb_driver.instance import get_database_instance, generate_key_pair
 from bigchaindb_driver.exceptions import BadRequest
-
+import logging
 
 class Plugin(AbstractPlugin):
     """BigchainDB ledger plugin for `Ocean DB's Python reference
@@ -11,6 +11,9 @@ class Plugin(AbstractPlugin):
     related actions.
     """
     BURN_ADDRESS = 'BurnBurnBurnBurnBurnBurnBurnBurnBurnBurnBurn'
+
+    logger = logging.getLogger('Plugin')
+    logging.basicConfig(level=logging.INFO)
 
     def __init__(self, config, namespace=None):
         """Initialize a :class:`~.Plugin` instance and connect to BigchainDB.
@@ -30,10 +33,11 @@ class Plugin(AbstractPlugin):
         """str: the type of this plugin (``'BigchainDB'``)"""
         return 'BigchainDB'
 
-    def write(self, obj):
+    def write(self, obj, resource_id=None):
         """Write and obj in bdb.
 
         :param obj: value to be written in bdb.
+        :param resource_id: id to make possible read and search for an resource.
         :return: id of the transaction
         """
         prepared_creation_tx = self.driver.instance.transactions.prepare(
@@ -41,10 +45,12 @@ class Plugin(AbstractPlugin):
             signers=self.user.public_key,
             asset={
                 'namespace': self.namespace,
+                'resource_id': resource_id,
                 'data': obj
             },
             metadata={
                 'namespace': self.namespace,
+                'resource_id': resource_id,
                 'data': obj
             }
         )
@@ -53,17 +59,21 @@ class Plugin(AbstractPlugin):
             prepared_creation_tx,
             private_keys=self.user.private_key
         )
-        print('bdb::write::{}'.format(signed_tx['id']))
-        # TODO Change to send_commit when we update to the new version
-        self.driver.instance.transactions.send(signed_tx)
+        logging.debug('bdb::write::{}'.format(signed_tx['id']))
+        self.driver.instance.transactions.send_commit(signed_tx)
         return signed_tx
 
-    def read(self, tx_id):
+    def read(self, resource_id):
+        tx_id = self._find_tx_id(resource_id)
+        return self._get(tx_id)
+
+    def _get(self, tx_id):
         """Read and obj in bdb using the tx_id.
 
-        :param tx_id: id of the transaction to be read.
+        :param resource_id: id of the transaction to be read.
         :return: value with the data, transaction id and transaction.
         """
+        # tx_id=self._find_tx_id(resource_id)
         value = [
             {
                 'data': transaction['metadata'],
@@ -72,12 +82,16 @@ class Plugin(AbstractPlugin):
             for transaction in self.driver.instance.transactions.get(asset_id=self.get_asset_id(tx_id))
         ][-1]
         if value['data']['data']:
-            print('bdb::read::{}'.format(value['data']))
+            logging.debug('bdb::read::{}'.format(value['data']))
             return value
         else:
             return False
 
-    def update(self, metadata, tx_id=None):
+    def update(self, record, asset_id):
+        tx_id = self._find_tx_id(asset_id)
+        return self._update(record, tx_id, asset_id)
+
+    def _update(self, metadata, tx_id, resource_id):
         """Update and obj in bdb using the tx_id.
 
         :param metadata: new metadata for the transaction.
@@ -87,17 +101,17 @@ class Plugin(AbstractPlugin):
         try:
             if not tx_id:
                 sent_tx = self.write(metadata)
-                print('bdb::put::{}'.format(sent_tx['id']))
+                logging.debug('bdb::put::{}'.format(sent_tx['id']))
                 return sent_tx
             else:
                 txs = self.driver.instance.transactions.get(asset_id=self.get_asset_id(tx_id))
                 unspent = txs[-1]
-                sent_tx = self._put(metadata, unspent)
-                print('bdb::put::{}'.format(sent_tx))
+                sent_tx = self._put(metadata, unspent, resource_id)
+                logging.debug('bdb::put::{}'.format(sent_tx))
                 return sent_tx
 
         except BadRequest as e:
-            print(e)
+            logging.error(e)
 
     def list(self, search_from=None, search_to=None, offset=None, limit=None):
         """List all the objects saved in the namespace.
@@ -112,8 +126,8 @@ class Plugin(AbstractPlugin):
         list = []
         for id in all:
             try:
-                if not self.read(id['id']) in list:
-                    list.append(self.read(id['id']))
+                if not self._get(id['id']) in list:
+                    list.append(self._get(id['id']))
             except Exception:
                 pass
 
@@ -127,12 +141,16 @@ class Plugin(AbstractPlugin):
         :return: list of transactions that match with the query.
         """
         query_string = ' "{}" '.format(query_string)
-        print('bdb::get::{}'.format(query_string))
+        logging.debug('bdb::get::{}'.format(query_string))
         assets = self.driver.instance.assets.get(search=query_string)
-        print('bdb::result::len {}'.format(len(assets)))
+        logging.debug('bdb::result::len {}'.format(len(assets)))
         return assets
 
-    def delete(self, tx_id):
+    def delete(self, asset_id):
+        tx_id = self._find_tx_id(asset_id)
+        return self._delete(tx_id)
+
+    def _delete(self, tx_id):
         """Delete a transaction. Read documentation about CRAB model in https://blog.bigchaindb.com/crab-create-retrieve-append-burn-b9f6d111f460.
 
         :param tx_id: transaction id
@@ -167,8 +185,7 @@ class Plugin(AbstractPlugin):
             prepared_transfer_tx,
             private_keys=self.user.private_key,
         )
-        # TODO Change to send_commit when we update to the new version
-        self.driver.instance.transactions.send(signed_tx)
+        self.driver.instance.transactions.send_commit(signed_tx)
 
     def get_asset_id(self, tx_id):
         """Return the tx_id of the first transaction.
@@ -180,7 +197,7 @@ class Plugin(AbstractPlugin):
         assert tx is not None
         return tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
 
-    def _put(self, metadata, unspent):
+    def _put(self, metadata, unspent, resource_id):
         output_index = 0
         output = unspent['outputs'][output_index]
 
@@ -200,6 +217,7 @@ class Plugin(AbstractPlugin):
             recipients=self.user.public_key,
             metadata={
                 'namespace': self.namespace,
+                'resource_id': resource_id,
                 'data': metadata
             }
         )
@@ -208,6 +226,13 @@ class Plugin(AbstractPlugin):
             prepared_transfer_tx,
             private_keys=self.user.private_key,
         )
-        # TODO Change to send_commit when we update to the new version
-        self.driver.instance.transactions.send(signed_tx)
+        self.driver.instance.transactions.send_commit(signed_tx)
         return signed_tx
+
+    def _find_tx_id(self, resource_id):
+        for a in self.list():
+            if a['data']['resource_id'] == resource_id:
+                return a['id']
+            else:
+                pass
+        return "%s not found" % resource_id
