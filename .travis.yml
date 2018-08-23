@@ -2,7 +2,6 @@ language: python
 python:
   - 3.6
   - 3.5
-  - 3.4
 
 sudo: required
 services:
@@ -17,9 +16,9 @@ script: tox
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
-  user: leucothia
+  user: $USER_NAME
   password:
-    secure: f73DnxAceQn1zLnwpEZn+igIjm+i9AlaKGtF6VM837e8XDQP6o0105Ird7/dYS3vm1BiCa2FSS+8LjyF3tQQuyROL+1EGdqKMJhUGHUXhq3gcXPGCA5QdWr5NI79hkGskmTx5WxzP0R4jKbtCeCNp+pJzlZ3gaaQVDurirNbpS5sIwvCbQ74T4rzkwi3QmET7RHRNckQ/whV49+8ItUBTkxRgCVcfIjp8MnyB712iNK1IB+zhE1E8FsECi1Zjy/XSkuNjsfRuoN3LdbqjmZ/B1DIPCEgFr2FZnL2O8dxw1fWQ+Hi9fGS56KCSFaQM+5U0m/T8Py/qwCT0nHg3DgDnxV7ruUJV5/bSViztYpXo/EH26jdSYKuT462/OUhvuMfEs9Fanao/x6qIrnXBAkuz2z/JWdm8jbE2yvnqoVMw1QCfZ7/HkXwgqvcv79fNl42r9wEN1gd+3SO1M4ZSjS1t4XqG+6lPHCaelBrv3IeIZZ3YhePISuort6JsUNyYL8d8pW8y3usVx74fuFOrc8NuCPQE7K8WP9whPadXKZhncJy1g5oH+VKo/yl3vzHj/sbOax91Uuqtgow4EtTZYXgiR5FB04HlUrpunRaL2q1Vr1LyPuRKHvHqjWtD7gBRoaKtnNNFsL+z38BwOxOc8dRKuBAinBwe5+wBICpII/ePdY=
+    secure: $SECURE
   on:
     tags: true
     repo: oceanprotocol/oceandb-bigchaindb-driver

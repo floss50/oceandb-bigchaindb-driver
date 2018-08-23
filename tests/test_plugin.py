@@ -11,34 +11,34 @@ def test_plugin_type_is_bdb():
 
 
 def test_plugin_write_and_read():
-    tx = bdb.write({"value": "plugin"})
-    assert bdb.read(tx['id'])['data']['data']['value'] == 'plugin'
-    bdb.delete(tx['id'])
+    tx = bdb.write({"value": "plugin"}, resource_id=1)
+    assert bdb.read(resource_id=1)['data']['data']['value'] == 'plugin'
+    bdb.delete(1)
 
 
 def test_update():
-    tx = bdb.write({"value": "test"})
-    assert bdb.read(tx['id'])['data']['data']['value'] == 'test'
-    tx1 = bdb.update({"value": "testUpdated"}, tx['id'])
-    tx2 = bdb.update({"value": "testUpdated2"}, tx1['id'])
-    assert bdb.read(tx2['id'])['data']['data']['value'] == 'testUpdated2'
-    bdb.delete(tx['id'])
+    bdb.write({"value": "test"}, resource_id=2)
+    assert bdb.read(resource_id=2)['data']['data']['value'] == 'test'
+    bdb.update({"value": "testUpdated"}, 2)
+    bdb.update({"value": "testUpdated2"}, 2)
+    assert bdb.read(resource_id=2)['data']['data']['value'] == 'testUpdated2'
+    bdb.delete(2)
 
 
 def test_plugin_list():
-    tx1 = bdb.write({"value": "test1"})
-    bdb.update({"value": "testUpdated"}, tx1['id'])
-    tx2 = bdb.write({"value": "test2"})
-    tx3 = bdb.write({"value": "test3"})
+    bdb.write({"value": "test1"},resource_id=3)
+    bdb.update({"value": "testUpdated"}, 3)
+    bdb.write({"value": "test2"}, resource_id=4)
+    bdb.write({"value": "test3"}, resource_id=5)
     assert len(bdb.list()) == 3
     assert bdb.list()[0]['data']['data']['value'] == 'testUpdated'
-    bdb.delete(tx1['id'])
-    bdb.delete(tx2['id'])
-    bdb.delete(tx3['id'])
+    bdb.delete(3)
+    bdb.delete(4)
+    bdb.delete(5)
     assert len(bdb.list()) == 0
 
 
 def test_plugin_query():
-    tx_id = bdb.write({'example': 'BDB'})
+    bdb.write({'example': 'BDB'}, resource_id=6)
     assert bdb.query('BDB')[0]['data']['example'] == "BDB"
-    bdb.delete(tx_id['id'])
+    bdb.delete(6)
