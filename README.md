@@ -1,6 +1,6 @@
 [![banner](doc/img/repo-banner@2x.png)](https://oceanprotocol.com)
 
-<h1 align="center">oceandb-bigchaindb-driver</h1>
+# oceandb-bigchaindb-driver
 
 > 🐳 Ocean DB [BigchainDB](https://www.bigchaindb.com/) driver (Python).
 > [oceanprotocol.com](https://oceanprotocol.com)

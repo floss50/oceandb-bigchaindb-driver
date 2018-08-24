@@ -4,6 +4,7 @@ from oceandb_bigchaindb_driver.instance import get_database_instance, generate_k
 from bigchaindb_driver.exceptions import BadRequest
 import logging
 
+
 class Plugin(AbstractPlugin):
     """BigchainDB ledger plugin for `Ocean DB's Python reference
     implementation <https://github.com/oceanprotocol/oceandb-bigchaindb-driver>`_.
@@ -40,17 +41,17 @@ class Plugin(AbstractPlugin):
         :param resource_id: id to make possible read and search for an resource.
         :return: id of the transaction
         """
+        if resource_id is not None:
+            obj['_id'] = resource_id
         prepared_creation_tx = self.driver.instance.transactions.prepare(
             operation='CREATE',
             signers=self.user.public_key,
             asset={
                 'namespace': self.namespace,
-                'resource_id': resource_id,
                 'data': obj
             },
             metadata={
                 'namespace': self.namespace,
-                'resource_id': resource_id,
                 'data': obj
             }
         )
@@ -65,7 +66,7 @@ class Plugin(AbstractPlugin):
 
     def read(self, resource_id):
         tx_id = self._find_tx_id(resource_id)
-        return self._get(tx_id)
+        return self._get(tx_id)['data']['data']
 
     def _get(self, tx_id):
         """Read and obj in bdb using the tx_id.
@@ -100,7 +101,7 @@ class Plugin(AbstractPlugin):
         """
         try:
             if not tx_id:
-                sent_tx = self.write(metadata)
+                sent_tx = self.write(metadata,resource_id)
                 logging.debug('bdb::put::{}'.format(sent_tx['id']))
                 return sent_tx
             else:
@@ -113,7 +114,21 @@ class Plugin(AbstractPlugin):
         except BadRequest as e:
             logging.error(e)
 
-    def list(self, search_from=None, search_to=None, offset=None, limit=None):
+    def list(self, search_from=None, search_to=None, limit=None):
+        """List all the objects saved in the namespace.
+
+         :param search_from: TBI
+         :param search_to: TBI
+         :param offset: TBI
+         :param limit: max number of values to be shows.
+         :return: list with transactions.
+         """
+        l=[]
+        for i in self._list():
+            l.append(i['data']['data'])
+        return l[0:limit]
+
+    def _list(self):
         """List all the objects saved in the namespace.
 
         :param search_from: TBI
@@ -131,7 +146,7 @@ class Plugin(AbstractPlugin):
             except Exception:
                 pass
 
-        return list[0:limit]
+        return list
 
     # TODO Query only has to work in the namespace.
     def query(self, query_string):
@@ -209,7 +224,7 @@ class Plugin(AbstractPlugin):
             },
             'owners_before': output['public_keys']
         }
-
+        metadata['_id'] = resource_id
         prepared_transfer_tx = self.driver.instance.transactions.prepare(
             operation='TRANSFER',
             asset=unspent['asset'] if 'id' in unspent['asset'] else {'id': unspent['id']},
@@ -217,7 +232,6 @@ class Plugin(AbstractPlugin):
             recipients=self.user.public_key,
             metadata={
                 'namespace': self.namespace,
-                'resource_id': resource_id,
                 'data': metadata
             }
         )
@@ -230,8 +244,8 @@ class Plugin(AbstractPlugin):
         return signed_tx
 
     def _find_tx_id(self, resource_id):
-        for a in self.list():
-            if a['data']['resource_id'] == resource_id:
+        for a in self._list():
+            if a['data']['data']['_id'] == resource_id:
                 return a['id']
             else:
                 pass
