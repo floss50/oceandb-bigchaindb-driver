@@ -1,6 +1,6 @@
-[![banner](doc/img/repo-banner@2x.png)](https://oceanprotocol.com)
+[![banner](https://raw.githubusercontent.com/oceanprotocol/art/master/github/repo-banner%402x.png)](https://oceanprotocol.com)
 
-<h1 align="center">oceandb-bigchaindb-driver</h1>
+# oceandb-bigchaindb-driver
 
 > 🐳 Ocean DB [BigchainDB](https://www.bigchaindb.com/) driver (Python).
 > [oceanprotocol.com](https://oceanprotocol.com)
@@ -74,19 +74,15 @@ Once you have defined this the only thing that you have to do it is use it:
 
 CRAB is the CRUD model in databases applied to blockchains:
 
-+--------------+----------------+
-| Database     | Blockchain     |
-+==============+================+
-| **C**\ reate | **C**\ reate   |
-+--------------+----------------+
-| **R**\ ead   | **R**\ etrieve |
-+--------------+----------------+
-| **U**\ pdate | **A**\ ppend   |
-+--------------+----------------+
-| **D**\ elete | **B**\ urn     |
-+--------------+----------------+
+Database    | Blockchain   
+------------|------------
+ **C**reate | **C**reate   
+ **R**ead   | **R**etrieve 
+ **U**pdate | **A**ppend   
+ **D**elete | **B**urn     
 
-You can find `here <https://blog.bigchaindb.com/crab-create-retrieve-append-burn-b9f6d111f460>`_ a link talking about the CRAB model.
+
+You can find [here](https://blog.bigchaindb.com/crab-create-retrieve-append-burn-b9f6d111f460) a link talking about the CRAB model.
 
 ## Code style
 
