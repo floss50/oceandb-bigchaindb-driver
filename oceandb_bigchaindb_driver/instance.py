@@ -1,10 +1,10 @@
 from bigchaindb_driver import BigchainDB
 from bigchaindb_driver.crypto import generate_keypair
+from oceandb_driver_interface.utils import get_value
 import sha3
 from cryptoconditions import crypto
 import nacl.signing
 from collections import namedtuple
-
 _DB_INSTANCE = None
 
 
@@ -18,14 +18,13 @@ def get_database_instance(config_file=None):
 
 class BigchainDBInstance(object):
 
-    def __init__(self, config):
-        scheme = config['db.scheme'] if config['db.scheme'] else 'https'
-        host = config['db.hostname']
-        port = int(config['db.port']) if config['db.port'] else ''
-        app_id = config['db.app_id']
-        app_key = config['db.app_key']
+    def __init__(self, config=None):
+        scheme = get_value('db.scheme', 'DB_SCHEME', 'http', config)
+        host = get_value('db.hostname', 'DB_HOSTNAME', 'localhost', config)
+        port = int(get_value('db.port', 'DB_PORT', 9984, config))
+        app_id = get_value('db.app_id', 'DB_APP_ID', None, config)
+        app_key = get_value('db.app_key', 'DB_APP_KEY', None, config)
         bdb_root_url = '%s://%s:%s' % (scheme, host, port)
-        # bdb_root_url = 'https://%s:%s' % (host, port)
         tokens = {'app_id': app_id, 'app_key': app_key}
 
         self._bdb = BigchainDB(bdb_root_url, headers=tokens)
