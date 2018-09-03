@@ -5,11 +5,11 @@
 
 from setuptools import setup, find_packages
 
-with open('README.rst', encoding='utf-8') as readme_file:
+with open('README.md', encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst', encoding='utf-8') as history_file:
-    history = history_file.read()
+with open('CHANGELOG.md', encoding='utf-8') as changelog_file:
+    changelog = changelog_file.read()
 
 requirements = ['oceandb-driver-interface', 'bigchaindb_driver', 'BigchainDB', ]
 
@@ -32,7 +32,7 @@ setup(
     description="🐳 Ocean DB BigchainDB driver (Python).",
     install_requires=requirements,
     license="Apache Software License 2.0",
-    long_description=readme + '\n\n' + history,
+    long_description=readme + '\n\n' + changelog,
     long_description_content_type='text/x-rst',
     include_package_data=True,
     keywords='oceandb_bigchaindb_driver',
@@ -42,6 +42,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/oceanprotocol/oceandb-bigchaindb-driver',
-    version='0.1.0',
+    version='0.1.3',
     zip_safe=False,
 )
