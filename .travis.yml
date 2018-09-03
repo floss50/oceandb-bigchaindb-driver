@@ -16,10 +16,12 @@ script: tox
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
-  user: $USER_NAME
+  user:
+    secure: ${PYPI_USER}
   password:
-    secure: $SECURE
+    secure: ${PYPI_PASSWORD}
   on:
     tags: true
+    branch: master
     repo: oceanprotocol/oceandb-bigchaindb-driver
     python: 3.6
