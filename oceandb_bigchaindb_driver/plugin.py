@@ -1,6 +1,6 @@
 """Implementation of OceanDB plugin based in BigchainDB"""
 from oceandb_driver_interface.plugin import AbstractPlugin
-from oceandb_bigchaindb_driver.instance import get_database_instance, generate_key_pair
+from oceandb_bigchaindb_driver.instance import get_database_instance, generate_key_pair, get_value
 from bigchaindb_driver.exceptions import BadRequest
 import logging
 
@@ -13,21 +13,18 @@ class Plugin(AbstractPlugin):
     """
     BURN_ADDRESS = 'BurnBurnBurnBurnBurnBurnBurnBurnBurnBurnBurn'
 
-    logger = logging.getLogger('Plugin')
-    logging.basicConfig(level=logging.INFO)
-
-    def __init__(self, config, namespace=None):
+    def __init__(self, config=None, namespace=None):
         """Initialize a :class:`~.Plugin` instance and connect to BigchainDB.
         Args:
             *nodes (str): One or more URLs of BigchainDB nodes to
                 connect to as the persistence layer
         """
         self.driver = get_database_instance(config)
-        self.user = generate_key_pair(config['secret'])
-        if namespace:
-            self.namespace = namespace
-        else:
-            self.namespace = config['db.namespace']
+        self.user = generate_key_pair(get_value('secret', 'SECRET', None, config))
+        self.namespace = get_value('db.namespace', 'DB_NAMESPACE', 'namespace' if not namespace else namespace, config)
+        self.logger = logging.getLogger('Plugin')
+        logging.basicConfig(level=logging.INFO)
+
 
     @property
     def type(self):
@@ -60,8 +57,8 @@ class Plugin(AbstractPlugin):
             prepared_creation_tx,
             private_keys=self.user.private_key
         )
-        logging.debug('bdb::write::{}'.format(signed_tx['id']))
-        self.driver.instance.transactions.send_commit(signed_tx)
+        self.logger.debug('bdb::write::{}'.format(signed_tx['id']))
+        self.driver.instance.transactions.send(signed_tx)
         return signed_tx
 
     def read(self, resource_id):
@@ -83,7 +80,7 @@ class Plugin(AbstractPlugin):
             for transaction in self.driver.instance.transactions.get(asset_id=self.get_asset_id(tx_id))
         ][-1]
         if value['data']['data']:
-            logging.debug('bdb::read::{}'.format(value['data']))
+            self.logger.debug('bdb::read::{}'.format(value['data']))
             return value
         else:
             return False
@@ -101,14 +98,14 @@ class Plugin(AbstractPlugin):
         """
         try:
             if not tx_id:
-                sent_tx = self.write(metadata,resource_id)
-                logging.debug('bdb::put::{}'.format(sent_tx['id']))
+                sent_tx = self.write(metadata, resource_id)
+                self.logger.debug('bdb::put::{}'.format(sent_tx['id']))
                 return sent_tx
             else:
                 txs = self.driver.instance.transactions.get(asset_id=self.get_asset_id(tx_id))
                 unspent = txs[-1]
                 sent_tx = self._put(metadata, unspent, resource_id)
-                logging.debug('bdb::put::{}'.format(sent_tx))
+                self.logger.debug('bdb::put::{}'.format(sent_tx))
                 return sent_tx
 
         except BadRequest as e:
@@ -123,7 +120,7 @@ class Plugin(AbstractPlugin):
          :param limit: max number of values to be shows.
          :return: list with transactions.
          """
-        l=[]
+        l = []
         for i in self._list():
             l.append(i['data']['data'])
         return l[0:limit]
@@ -156,9 +153,9 @@ class Plugin(AbstractPlugin):
         :return: list of transactions that match with the query.
         """
         query_string = ' "{}" '.format(query_string)
-        logging.debug('bdb::get::{}'.format(query_string))
+        self.logger.debug('bdb::get::{}'.format(query_string))
         assets = self.driver.instance.assets.get(search=query_string)
-        logging.debug('bdb::result::len {}'.format(len(assets)))
+        self.logger.debug('bdb::result::len {}'.format(len(assets)))
         return assets
 
     def delete(self, asset_id):
@@ -195,12 +192,11 @@ class Plugin(AbstractPlugin):
 
             }
         )
-
         signed_tx = self.driver.instance.transactions.fulfill(
             prepared_transfer_tx,
             private_keys=self.user.private_key,
         )
-        self.driver.instance.transactions.send_commit(signed_tx)
+        self.driver.instance.transactions.send(signed_tx)
 
     def get_asset_id(self, tx_id):
         """Return the tx_id of the first transaction.
@@ -240,7 +236,7 @@ class Plugin(AbstractPlugin):
             prepared_transfer_tx,
             private_keys=self.user.private_key,
         )
-        self.driver.instance.transactions.send_commit(signed_tx)
+        self.driver.instance.transactions.send(signed_tx)
         return signed_tx
 
     def _find_tx_id(self, resource_id):
