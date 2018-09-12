@@ -5,10 +5,10 @@
 
 from setuptools import setup, find_packages
 
-with open('README.md', encoding='utf-8') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('CHANGELOG.md', encoding='utf-8') as changelog_file:
+with open('CHANGELOG.md') as changelog_file:
     changelog = changelog_file.read()
 
 requirements = ['oceandb-driver-interface', 'bigchaindb_driver', 'BigchainDB', ]
@@ -25,7 +25,6 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
