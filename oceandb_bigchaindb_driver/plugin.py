@@ -1,8 +1,13 @@
 """Implementation of OceanDB plugin based in BigchainDB"""
-from oceandb_driver_interface.plugin import AbstractPlugin
-from oceandb_bigchaindb_driver.instance import get_database_instance, generate_key_pair, get_value
-from bigchaindb_driver.exceptions import BadRequest
+import json
 import logging
+
+import requests
+from bigchaindb_driver.exceptions import BadRequest
+from oceandb_driver_interface.plugin import AbstractPlugin
+from oceandb_driver_interface.search_model import FullTextModel, QueryModel
+
+from oceandb_bigchaindb_driver.instance import get_database_instance, generate_key_pair, get_value
 
 
 class Plugin(AbstractPlugin):
@@ -25,7 +30,6 @@ class Plugin(AbstractPlugin):
         self.logger = logging.getLogger('Plugin')
         logging.basicConfig(level=logging.INFO)
 
-
     @property
     def type(self):
         """str: the type of this plugin (``'BigchainDB'``)"""
@@ -39,6 +43,8 @@ class Plugin(AbstractPlugin):
         :return: id of the transaction
         """
         if resource_id is not None:
+            if self.read(resource_id):
+                raise ValueError("There are one object already with this id.")
             obj['_id'] = resource_id
         prepared_creation_tx = self.driver.instance.transactions.prepare(
             operation='CREATE',
@@ -63,6 +69,8 @@ class Plugin(AbstractPlugin):
 
     def read(self, resource_id):
         tx_id = self._find_tx_id(resource_id)
+        if not tx_id:
+            return False
         return self._get(tx_id)['data']['data']
 
     def _get(self, tx_id):
@@ -146,17 +154,48 @@ class Plugin(AbstractPlugin):
         return list
 
     # TODO Query only has to work in the namespace.
-    def query(self, query_string):
+    def query(self, search_model: QueryModel):
         """Query to bdb namespace.
 
         :param query_string: query in string format.
         :return: list of transactions that match with the query.
         """
-        query_string = ' "{}" '.format(query_string)
-        self.logger.debug('bdb::get::{}'.format(query_string))
-        assets = self.driver.instance.assets.get(search=query_string)
+        self.logger.debug('bdb::get::{}'.format(search_model.query))
+        assets = json.loads(requests.post("http://localhost:4000/query", data=search_model.query).content)['data']
         self.logger.debug('bdb::result::len {}'.format(len(assets)))
-        return assets
+        assets_metadata = []
+        for i in assets:
+            try:
+                assets_metadata.append(self._get(i['id'])['data']['data'])
+            except:
+                pass
+        return assets_metadata
+
+    def text_query(self, search_model: FullTextModel):
+        query_string = ' "{}" '.format(search_model.text)
+        self.logger.debug('bdb::get::{}'.format(query_string))
+        assets = self.driver.instance.metadata.get(search=query_string)
+        key = list(search_model.sort.keys())[0]
+        for i in assets:
+            try:
+                if i['metadata']['namespace'] != self.namespace:
+                    assets.remove(i)
+                    continue
+                if json.loads(requests.post("http://localhost:4000/query",
+                                            data={"assetid": i['id']}).content)['data'][0]['outputs'][0]['public_keys'][
+                    0] == self.BURN_ADDRESS:
+                    assets.remove(i)
+                    continue
+            except:
+                pass
+        direction = True if list(search_model.sort.values())[0] == -1 else False
+        assets_sorted = sorted(assets, key=lambda k: k['metadata']['data'][key],
+                               reverse=direction)
+        sorted_page = []
+        for i in range(0, len(assets_sorted), search_model.offset):
+            sorted_page.append(assets_sorted[i:i + search_model.offset])
+        self.logger.debug('bdb::result::len {}'.format(len(assets_sorted)))
+        return sorted_page[search_model.page]
 
     def delete(self, asset_id):
         tx_id = self._find_tx_id(asset_id)
@@ -245,4 +284,4 @@ class Plugin(AbstractPlugin):
                 return a['id']
             else:
                 pass
-        return "%s not found" % resource_id
+        return False
