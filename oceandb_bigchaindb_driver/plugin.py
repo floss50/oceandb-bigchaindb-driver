@@ -64,7 +64,7 @@ class Plugin(AbstractPlugin):
             private_keys=self.user.private_key
         )
         self.logger.debug('bdb::write::{}'.format(signed_tx['id']))
-        self.driver.instance.transactions.send(signed_tx)
+        self.driver.instance.transactions.send_commit(signed_tx)
         return signed_tx
 
     def read(self, resource_id):
@@ -235,7 +235,7 @@ class Plugin(AbstractPlugin):
             prepared_transfer_tx,
             private_keys=self.user.private_key,
         )
-        self.driver.instance.transactions.send(signed_tx)
+        self.driver.instance.transactions.send_commit(signed_tx)
 
     def get_asset_id(self, tx_id):
         """Return the tx_id of the first transaction.
@@ -275,7 +275,7 @@ class Plugin(AbstractPlugin):
             prepared_transfer_tx,
             private_keys=self.user.private_key,
         )
-        self.driver.instance.transactions.send(signed_tx)
+        self.driver.instance.transactions.send_commit(signed_tx)
         return signed_tx
 
     def _find_tx_id(self, resource_id):
