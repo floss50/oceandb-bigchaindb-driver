@@ -11,11 +11,30 @@ with open('README.md') as readme_file:
 with open('CHANGELOG.md') as changelog_file:
     changelog = changelog_file.read()
 
-requirements = ['oceandb-driver-interface', 'bigchaindb_driver', 'BigchainDB', ]
+install_requirements = [
+    'bigchaindb_driver',
+    'bigchaindb==2.0.0b9',
+    'oceandb-driver-interface',
+    'singletonify',
+]
 
 setup_requirements = ['pytest-runner', ]
 
-test_requirements = ['pytest', ]
+dev_requirements = [
+    'bumpversion',
+    'pkginfo',
+    'twine',
+    'watchdog',
+]
+
+test_requirements = [
+    'codacy-coverage',
+    'coverage',
+    'mccabe',
+    'pylint',
+    'pytest',
+    'tox',
+]
 
 setup(
     author="leucothia",
@@ -29,7 +48,11 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     description="🐳 Ocean DB BigchainDB driver (Python).",
-    install_requires=requirements,
+    extras_require={
+        'test': test_requirements,
+        'dev': dev_requirements + test_requirements,
+    },
+    install_requires=install_requirements,
     license="Apache Software License 2.0",
     long_description=readme + '\n\n' + changelog,
     long_description_content_type='text/x-rst',
