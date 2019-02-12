@@ -22,10 +22,8 @@ class BigchainDBInstance(object):
         scheme = get_value('db.scheme', 'DB_SCHEME', 'http', config)
         host = get_value('db.hostname', 'DB_HOSTNAME', 'localhost', config)
         port = int(get_value('db.port', 'DB_PORT', 9984, config))
-        app_id = get_value('db.app_id', 'DB_APP_ID', None, config)
-        app_key = get_value('db.app_key', 'DB_APP_KEY', None, config)
         bdb_root_url = '%s://%s:%s' % (scheme, host, port)
-        tokens = {'app_id': app_id, 'app_key': app_key}
+        tokens = {}
 
         self._bdb = BigchainDB(bdb_root_url, headers=tokens)
 
